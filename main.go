@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var addr = flag.String("addr", "0.0.0.0:9001", "输入监听地址")
+var addr = flag.String("addr", "0.0.0.0:9010", "输入监听地址")
 var token = flag.String("token", "", "输入sonarqube token")
 var httpClient = &http.Client{}
 
@@ -59,8 +59,11 @@ func dingTalkHandler(w http.ResponseWriter, r *http.Request) {
 	sonarUrl := sonarQubeCallBackData.ServerURL
 	// 项目名称
 	projectName := sonarQubeCallBackData.Project.Name
+	//项目分支
+	projectBranch := sonarQubeCallBackData.Branch.Name
 	// 项目key
 	projectKey := sonarQubeCallBackData.Project.Key
+	//branch := sonarQubeCallBackData.Branch.Name
 	// sonar prop
 	var totalBugs, vulnerabilities, codeSmells, coverage, duplicatedLinesDensity, alertStatus string
 	// dingtalk prop
@@ -97,11 +100,13 @@ func dingTalkHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	sendUrl = fmt.Sprintf("https://oapi.dingtalk.com/robot/send?access_token=%s", accessToken)
-	messageUrl = fmt.Sprintf("%s/dashboard?id=%s", sonarUrl, projectKey)
+	//发送的链接为提交扫描分支
+	messageUrl = fmt.Sprintf("%s/dashboard?branch=%s&id=%s", sonarUrl, projectBranch, projectKey)
 
 	textList := []string{
 		fmt.Sprintf("![head](%s)", picUrl),
-		fmt.Sprintf("本次扫描仓库分支: %s", projectName),
+		fmt.Sprintf("本次扫描仓库: %s", projectName),
+		fmt.Sprintf("扫描分支: %s", projectBranch),
 		fmt.Sprintf("## 代码总体扫描结果"),
 		fmt.Sprintf("BUG数: %s 个", totalBugs),
 		fmt.Sprintf("漏洞数: %s 个", vulnerabilities),
